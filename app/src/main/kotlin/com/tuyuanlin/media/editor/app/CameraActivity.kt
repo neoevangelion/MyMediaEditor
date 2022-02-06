@@ -2,9 +2,11 @@ package com.tuyuanlin.media.editor.app
 
 import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Size
+import android.view.Surface
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -23,6 +25,10 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.camera_activity_content)
 
+        setSupportActionBar(toolbar)
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         start_button.setOnClickListener {
             startCamera()
         }
@@ -39,16 +45,26 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun setupCameraPreview(cameraProviderFuture: ListenableFuture<ProcessCameraProvider>) {
-        val cameraProvider = cameraProviderFuture.get()
+        val rotation: Int
+        val width: Int
+        val height: Int
 
-        val metrics = DisplayMetrics().also { preview_view.display.getRealMetrics(it) }
-        val ration = 1f
-        val applyWidthPixels = (metrics.widthPixels * ration).toInt()
-        val applyHeightPixel = (metrics.heightPixels * ration).toInt()
-        val resolution = Size(applyWidthPixels, applyHeightPixel)
-        val rotation = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val metrics = (getSystemService(Context.WINDOW_SERVICE) as WindowManager)
+                .currentWindowMetrics
+            rotation = display?.rotation ?: Surface.ROTATION_0
+            width = metrics.bounds.width()
+            height = metrics.bounds.height()
+        } else {
+            val metrics = DisplayMetrics().also { preview_view.display.getRealMetrics(it) }
+            rotation =
+                (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+            width = metrics.widthPixels
+            height = metrics.heightPixels
+        }
+        val resolution = Size(width, height)
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
         mPreview = Preview.Builder()
             .setTargetResolution(resolution)
             .setTargetRotation(rotation)
@@ -56,6 +72,7 @@ class CameraActivity : AppCompatActivity() {
 
         mPreview?.setSurfaceProvider(preview_view.surfaceProvider)
 
+        val cameraProvider = cameraProviderFuture.get()
         cameraProvider.bindToLifecycle(this, cameraSelector, mPreview)
     }
 }

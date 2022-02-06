@@ -22,9 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".CameraActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+
+        <activity
+          android:name=".PlayerActivity"
+          android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+
+        <activity
+          android:name=".EditorActivity"
+          android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
     </application>
 
 

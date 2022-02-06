@@ -18,5 +18,13 @@ class MainActivity : AppCompatActivity() {
         open_camera_button.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))
         }
+
+        open_player_button.setOnClickListener {
+            startActivity(Intent(this, PlayerActivity::class.java))
+        }
+
+        open_editor_button.setOnClickListener {
+            startActivity(Intent(this, EditorActivity::class.java))
+        }
     }
 }
