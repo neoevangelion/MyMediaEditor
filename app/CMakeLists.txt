@@ -79,6 +79,17 @@ set_target_properties(
         ${CMAKE_SOURCE_DIR}/jniLibs/${ANDROID_ABI}/libswscale.so
 )
 
+add_library(
+        swresample-lib
+        SHARED
+        IMPORTED
+)
+set_target_properties(
+        swresample-lib
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/jniLibs/${ANDROID_ABI}/libswresample.so
+)
+
 target_link_libraries(
         player-lib
         log
@@ -89,4 +100,5 @@ target_link_libraries(
         avformat-lib
         avutil-lib
         swscale-lib
+        swresample-lib
 )
