@@ -10,4 +10,6 @@ class Player {
     }
 
     external fun playVideo(filePath: String?, surfaceView: Surface?)
+
+    external fun playAudio(filePath: String?)
 }

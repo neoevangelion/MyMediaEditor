@@ -14,7 +14,8 @@ extern "C" {
 
 #define DEFAULT_LOG_TAG "PLAYER"
 
-void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatContext, int video_stream_index, ANativeWindow *native_window) {
+void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatContext, int video_stream_index,
+                  ANativeWindow *native_window) {
     AVPacket *packet = av_packet_alloc();
     AVFrame *frame = av_frame_alloc();
     AVFrame *rgba_frame = av_frame_alloc();
@@ -28,8 +29,8 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
     av_image_fill_arrays(rgba_frame->data, rgba_frame->linesize, out_buffer, AV_PIX_FMT_RGBA, width, height, 1);
 
     SwsContext *convert_context = sws_getContext(width, height, video_codec_context->pix_fmt, width, height,
-                                                        AV_PIX_FMT_RGBA, SWS_BICUBIC,
-                                                        nullptr, nullptr, nullptr);
+                                                 AV_PIX_FMT_RGBA, SWS_BICUBIC,
+                                                 nullptr, nullptr, nullptr);
     while (av_read_frame(formatContext, packet) >= 0) {
         if (packet->stream_index == video_stream_index) {
             int result = avcodec_send_packet(video_codec_context, packet);
@@ -44,7 +45,8 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
                 continue;
             }
 
-            result = sws_scale(convert_context, frame->data, frame->linesize, 0, height, rgba_frame->data, rgba_frame->linesize);
+            result = sws_scale(convert_context, frame->data, frame->linesize, 0, height, rgba_frame->data,
+                               rgba_frame->linesize);
             if (result < 0) {
                 LOG_ERROR(DEFAULT_LOG_TAG, "Can not scale frame")
                 continue;
@@ -56,9 +58,10 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
                 continue;
             }
 
-            auto bits = (uint8_t *)window_buffer.bits;
+            auto bits = (uint8_t *) window_buffer.bits;
             for (int h = 0; h < height; ++h) {
-                memcpy(bits + h * window_buffer.stride * 4, out_buffer + h * rgba_frame->linesize[0], rgba_frame->linesize[0]);
+                memcpy(bits + h * window_buffer.stride * 4, out_buffer + h * rgba_frame->linesize[0],
+                       rgba_frame->linesize[0]);
             }
             ANativeWindow_unlockAndPost(native_window);
         }
@@ -102,7 +105,7 @@ Java_com_tuyuanlin_media_editor_middleware_Player_playVideo(JNIEnv *env, jobject
 
     result = avformat_find_stream_info(format_context, nullptr);
     if (result < 0) {
-        LOG_ERROR(DEFAULT_LOG_TAG, "Can not find stream info")
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not find video stream info")
         goto error;
     }
 
@@ -159,6 +162,75 @@ Java_com_tuyuanlin_media_editor_middleware_Player_playVideo(JNIEnv *env, jobject
 
     if (video_codec_context != nullptr) {
         avcodec_close(video_codec_context);
+    }
+
+    if (format_context != nullptr) {
+        avformat_close_input(&format_context);
+        avformat_free_context(format_context);
+    }
+
+    if (input_path != nullptr) {
+        env->ReleaseStringUTFChars(file_path, input_path);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_tuyuanlin_media_editor_middleware_Player_playAudio(JNIEnv *env, jobject thiz, jstring file_path) {
+    const char *input_path = nullptr;
+    AVFormatContext *format_context = nullptr;
+    int audio_stream_index = -1;
+    AVCodecContext *audio_codec_context = nullptr;
+    AVCodec *audio_codec = nullptr;
+
+    input_path = env->GetStringUTFChars(file_path, JNI_FALSE);
+
+    av_register_all();
+
+    format_context = avformat_alloc_context();
+
+    int result = avformat_open_input(&format_context, input_path, nullptr, nullptr);
+    if (result < 0) {
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not open audio file")
+        goto error;
+    }
+
+    result = avformat_find_stream_info(format_context, nullptr);
+    if (result < 0) {
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not find audio stream info")
+        goto error;
+    }
+
+    for (int i = 0; i < format_context->nb_streams; ++i) {
+        if (format_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            audio_stream_index = i;
+            break;
+        }
+    }
+
+    if (audio_stream_index == -1) {
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not find audio stream")
+        goto error;
+    }
+
+    audio_codec_context = avcodec_alloc_context3(nullptr);
+    result = avcodec_parameters_to_context(audio_codec_context, format_context->streams[audio_stream_index]->codecpar);
+    if (result < 0) {
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not init audio codec context")
+        goto error;
+    }
+
+    audio_codec = avcodec_find_decoder(audio_codec_context->codec_id);
+    if (audio_codec == nullptr) {
+        LOG_ERROR(DEFAULT_LOG_TAG, "Can not find audio codec")
+        goto error;
+    }
+
+    // TODO play audio track
+
+    error:
+    if (audio_codec_context != nullptr) {
+        avcodec_free_context(&audio_codec_context);
     }
 
     if (format_context != nullptr) {
