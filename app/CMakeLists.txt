@@ -6,7 +6,7 @@ add_library(
         src/main/cpp/player.cpp
 )
 
-include_directories( ${CMAKE_SOURCE_DIR}/jniLibs/include )
+include_directories(${CMAKE_SOURCE_DIR}/jniLibs/include)
 
 add_library(
         avcodec-lib

@@ -3,27 +3,28 @@ package com.tuyuanlin.media.editor.app
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.main_activity_content.*
+import com.tuyuanlin.media.editor.app.databinding.MainActivityContentBinding
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewBinding = MainActivityContentBinding.inflate(layoutInflater)
         setContentView(R.layout.main_activity_content)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        open_camera_button.setOnClickListener {
+        viewBinding.openCameraButton.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))
         }
 
-        open_player_button.setOnClickListener {
+        viewBinding.openPlayerButton.setOnClickListener {
             startActivity(Intent(this, PlayerActivity::class.java))
         }
 
-        open_editor_button.setOnClickListener {
+        viewBinding.openEditorButton.setOnClickListener {
             startActivity(Intent(this, EditorActivity::class.java))
         }
     }

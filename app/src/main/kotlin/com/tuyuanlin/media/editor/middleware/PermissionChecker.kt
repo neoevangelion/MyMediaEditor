@@ -8,7 +8,11 @@ import androidx.core.content.ContextCompat
 
 object PermissionChecker {
     fun checkAndRequestPermission(activity: Activity, permission: String) {
-        if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(activity, arrayOf(permission), 0)
         }
     }

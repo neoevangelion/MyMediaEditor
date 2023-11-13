@@ -3,8 +3,8 @@ package com.tuyuanlin.media.editor.app
 import android.os.Bundle
 import android.view.SurfaceHolder
 import androidx.appcompat.app.AppCompatActivity
+import com.tuyuanlin.media.editor.app.databinding.PlayerActivityContentBinding
 import com.tuyuanlin.media.editor.middleware.Player
-import kotlinx.android.synthetic.main.player_activity_content.*
 import java.io.File
 
 class PlayerActivity : AppCompatActivity() {
@@ -13,12 +13,13 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewBinding = PlayerActivityContentBinding.inflate(layoutInflater);
         setContentView(R.layout.player_activity_content)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(viewBinding.toolbar)
 
-        surfaceHolder = player_surface_view.holder
+        surfaceHolder = viewBinding.playerSurfaceView.holder
 
-        play_button.setOnClickListener {
+        viewBinding.playButton.setOnClickListener {
             val file = File(getExternalFilesDir(null), "video.mp4")
             player.playVideo(file.absolutePath, surfaceHolder.surface)
         }

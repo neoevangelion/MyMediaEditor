@@ -14,8 +14,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
+import com.tuyuanlin.media.editor.app.databinding.CameraActivityContentBinding
 import com.tuyuanlin.media.editor.middleware.PermissionChecker
-import kotlinx.android.synthetic.main.camera_activity_content.*
 
 
 class CameraActivity : AppCompatActivity() {
@@ -23,28 +23,32 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewBinding = CameraActivityContentBinding.inflate(layoutInflater);
         setContentView(R.layout.camera_activity_content)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        start_button.setOnClickListener {
-            startCamera()
+        viewBinding.startButton.setOnClickListener {
+            startCamera(viewBinding)
         }
     }
 
-    private fun startCamera() {
+    private fun startCamera(viewBinding: CameraActivityContentBinding) {
         PermissionChecker.checkAndRequestPermission(this, Manifest.permission.CAMERA)
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener(
-            { setupCameraPreview(cameraProviderFuture) },
+            { setupCameraPreview(viewBinding, cameraProviderFuture) },
             ContextCompat.getMainExecutor(this)
         )
     }
 
-    private fun setupCameraPreview(cameraProviderFuture: ListenableFuture<ProcessCameraProvider>) {
+    private fun setupCameraPreview(
+        viewBinding: CameraActivityContentBinding,
+        cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    ) {
         val rotation: Int
         val width: Int
         val height: Int
@@ -56,7 +60,8 @@ class CameraActivity : AppCompatActivity() {
             width = metrics.bounds.width()
             height = metrics.bounds.height()
         } else {
-            val metrics = DisplayMetrics().also { preview_view.display.getRealMetrics(it) }
+            val metrics =
+                DisplayMetrics().also { viewBinding.previewView.display.getRealMetrics(it) }
             rotation =
                 (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
             width = metrics.widthPixels
@@ -70,7 +75,7 @@ class CameraActivity : AppCompatActivity() {
             .setTargetRotation(rotation)
             .build()
 
-        mPreview?.setSurfaceProvider(preview_view.surfaceProvider)
+        mPreview?.setSurfaceProvider(viewBinding.previewView.surfaceProvider)
 
         val cameraProvider = cameraProviderFuture.get()
         cameraProvider.bindToLifecycle(this, cameraSelector, mPreview)

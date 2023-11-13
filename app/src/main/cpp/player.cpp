@@ -14,7 +14,8 @@ extern "C" {
 
 #define DEFAULT_LOG_TAG "PLAYER"
 
-void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatContext, int video_stream_index,
+void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatContext,
+                  int video_stream_index,
                   ANativeWindow *native_window) {
     AVPacket *packet = av_packet_alloc();
     AVFrame *frame = av_frame_alloc();
@@ -26,9 +27,11 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
 
     int buffer_size = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, 1);
     auto *out_buffer = (uint8_t *) av_malloc(buffer_size * sizeof(int8_t));
-    av_image_fill_arrays(rgba_frame->data, rgba_frame->linesize, out_buffer, AV_PIX_FMT_RGBA, width, height, 1);
+    av_image_fill_arrays(rgba_frame->data, rgba_frame->linesize, out_buffer, AV_PIX_FMT_RGBA, width,
+                         height, 1);
 
-    SwsContext *convert_context = sws_getContext(width, height, video_codec_context->pix_fmt, width, height,
+    SwsContext *convert_context = sws_getContext(width, height, video_codec_context->pix_fmt, width,
+                                                 height,
                                                  AV_PIX_FMT_RGBA, SWS_BICUBIC,
                                                  nullptr, nullptr, nullptr);
     while (av_read_frame(formatContext, packet) >= 0) {
@@ -45,7 +48,8 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
                 continue;
             }
 
-            result = sws_scale(convert_context, frame->data, frame->linesize, 0, height, rgba_frame->data,
+            result = sws_scale(convert_context, frame->data, frame->linesize, 0, height,
+                               rgba_frame->data,
                                rgba_frame->linesize);
             if (result < 0) {
                 LOG_ERROR(DEFAULT_LOG_TAG, "Can not scale frame")
@@ -60,7 +64,8 @@ void render_frame(AVCodecContext *video_codec_context, AVFormatContext *formatCo
 
             auto bits = (uint8_t *) window_buffer.bits;
             for (int h = 0; h < height; ++h) {
-                memcpy(bits + h * window_buffer.stride * 4, out_buffer + h * rgba_frame->linesize[0],
+                memcpy(bits + h * window_buffer.stride * 4,
+                       out_buffer + h * rgba_frame->linesize[0],
                        rgba_frame->linesize[0]);
             }
             ANativeWindow_unlockAndPost(native_window);
@@ -147,7 +152,8 @@ Java_com_tuyuanlin_media_editor_middleware_Player_playVideo(JNIEnv *env, jobject
         goto error;
     }
 
-    result = ANativeWindow_setBuffersGeometry(native_window, width, height, WINDOW_FORMAT_RGBA_8888);
+    result = ANativeWindow_setBuffersGeometry(native_window, width, height,
+                                              WINDOW_FORMAT_RGBA_8888);
     if (result < 0) {
         LOG_ERROR(DEFAULT_LOG_TAG, "Can not set native window geometry")
         goto error;
@@ -176,7 +182,8 @@ Java_com_tuyuanlin_media_editor_middleware_Player_playVideo(JNIEnv *env, jobject
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_tuyuanlin_media_editor_middleware_Player_playAudio(JNIEnv *env, jobject thiz, jstring file_path) {
+Java_com_tuyuanlin_media_editor_middleware_Player_playAudio(JNIEnv *env, jobject thiz,
+                                                            jstring file_path) {
     const char *input_path = nullptr;
     AVFormatContext *format_context = nullptr;
     int audio_stream_index = -1;
@@ -214,7 +221,8 @@ Java_com_tuyuanlin_media_editor_middleware_Player_playAudio(JNIEnv *env, jobject
     }
 
     audio_codec_context = avcodec_alloc_context3(nullptr);
-    result = avcodec_parameters_to_context(audio_codec_context, format_context->streams[audio_stream_index]->codecpar);
+    result = avcodec_parameters_to_context(audio_codec_context,
+                                           format_context->streams[audio_stream_index]->codecpar);
     if (result < 0) {
         LOG_ERROR(DEFAULT_LOG_TAG, "Can not init audio codec context")
         goto error;
