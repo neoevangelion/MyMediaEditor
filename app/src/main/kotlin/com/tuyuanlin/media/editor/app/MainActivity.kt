@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewBinding = MainActivityContentBinding.inflate(layoutInflater)
-        setContentView(R.layout.main_activity_content)
+        setContentView(viewBinding.root)
 
         setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)

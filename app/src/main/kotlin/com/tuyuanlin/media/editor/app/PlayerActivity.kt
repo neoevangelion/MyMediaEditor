@@ -14,7 +14,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewBinding = PlayerActivityContentBinding.inflate(layoutInflater);
-        setContentView(R.layout.player_activity_content)
+        setContentView(viewBinding.root)
         setSupportActionBar(viewBinding.toolbar)
 
         surfaceHolder = viewBinding.playerSurfaceView.holder

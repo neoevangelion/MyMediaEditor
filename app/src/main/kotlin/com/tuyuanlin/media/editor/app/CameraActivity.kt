@@ -24,7 +24,7 @@ class CameraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewBinding = CameraActivityContentBinding.inflate(layoutInflater);
-        setContentView(R.layout.camera_activity_content)
+        setContentView(viewBinding.root)
 
         setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)

@@ -8,7 +8,7 @@ class EditorActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewBinding = EditorActivityContentBinding.inflate(layoutInflater)
-        setContentView(R.layout.editor_activity_content)
+        setContentView(viewBinding.root)
 
         setSupportActionBar(viewBinding.toolbar)
     }
